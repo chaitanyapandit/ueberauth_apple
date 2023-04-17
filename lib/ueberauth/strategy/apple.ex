@@ -212,7 +212,7 @@ defmodule Ueberauth.Strategy.Apple do
   end
 
   defp oauth_client_options_from_conn(conn) do
-    base_options = [redirect_uri: callback_url(conn)]
+    base_options = [redirect_uri: callback_url(conn), grant_type: "authorization_code"]
     request_options = conn.private[:ueberauth_request_options].options
 
     case {request_options[:client_id], request_options[:client_secret]} do
