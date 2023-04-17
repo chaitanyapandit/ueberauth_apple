@@ -85,14 +85,22 @@ defmodule Ueberauth.Strategy.Apple do
     with {:ok, %{"email" => email, "sub" => uid}} <- Token.payload(token, token_opts),
          user <- Map.merge(extract_user(params), %{"email" => email, "uid" => uid}),
          {:ok, token} <- OAuth.get_access_token([code: code], opts) do
+    Logger.warn("APPLEIDAUTH: reached1 email: #{inspect(email)}")
+    Logger.warn("APPLEIDAUTH: reached1 user: #{inspect(user)}")
+    Logger.warn("APPLEIDAUTH: reached1 token: #{inspect(token)}")
+
       conn
       |> put_private(:apple_token, token)
       |> put_private(:apple_user, user)
     else
       {:error, {error_code, error_description}} ->
+        Logger.warn("APPLEIDAUTH: error_description: #{inspect(error_description)}")
+
         set_errors!(conn, [error(error_code, error_description)])
 
       {:error, reason} ->
+        Logger.warn("APPLEIDAUTH: error reason: #{inspect(reason)}")
+
         set_errors!(conn, [error(to_string(reason), "Error while reading authentication token")])
     end
   end
