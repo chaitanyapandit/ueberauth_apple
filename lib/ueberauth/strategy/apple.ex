@@ -47,7 +47,6 @@ defmodule Ueberauth.Strategy.Apple do
       |> with_state_param(conn)
 
     opts = oauth_client_options_from_conn(conn)
-    Logger.warn("APPLEIDAUTH: handle_request opts: #{inspect(opts)}")
 
     conn
     |> modify_state_cookie(params)
@@ -78,29 +77,20 @@ defmodule Ueberauth.Strategy.Apple do
   @spec handle_callback!(Plug.Conn.t()) :: Plug.Conn.t()
   def handle_callback!(%Plug.Conn{params: %{"code" => code, "id_token" => token} = params} = conn) do
     opts = oauth_client_options_from_conn(conn)
-    Logger.warn("APPLEIDAUTH: opts: #{inspect(opts)}")
     token_opts = with_optional([], :public_keys, conn)
-    Logger.warn("APPLEIDAUTH: token_opts: #{inspect(token_opts)}")
 
     with {:ok, %{"email" => email, "sub" => uid}} <- Token.payload(token, token_opts),
          user <- Map.merge(extract_user(params), %{"email" => email, "uid" => uid}),
          {:ok, token} <- OAuth.get_access_token([code: code], opts) do
-    Logger.warn("APPLEIDAUTH: reached1 email: #{inspect(email)}")
-    Logger.warn("APPLEIDAUTH: reached1 user: #{inspect(user)}")
-    Logger.warn("APPLEIDAUTH: reached1 token: #{inspect(token)}")
 
       conn
       |> put_private(:apple_token, token)
       |> put_private(:apple_user, user)
     else
       {:error, {error_code, error_description}} ->
-        Logger.warn("APPLEIDAUTH: error_description: #{inspect(error_description)}")
-
         set_errors!(conn, [error(error_code, error_description)])
 
       {:error, reason} ->
-        Logger.warn("APPLEIDAUTH: error reason: #{inspect(reason)}")
-
         set_errors!(conn, [error(to_string(reason), "Error while reading authentication token")])
     end
   end
@@ -224,7 +214,7 @@ defmodule Ueberauth.Strategy.Apple do
   end
 
   defp oauth_client_options_from_conn(conn) do
-    base_options = [redirect_uri: callback_url(conn), grant_type: "authorization_code"]
+    base_options = [redirect_uri: callback_url(conn)]
     request_options = conn.private[:ueberauth_request_options].options
 
     case {request_options[:client_id], request_options[:client_secret]} do

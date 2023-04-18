@@ -57,13 +57,11 @@ defmodule Ueberauth.Strategy.Apple.OAuth do
   end
 
   def get_access_token(params \\ [], opts \\ []) do
-    Logger.warn("APPLEIDAUTH: OAuth2 params: #{inspect(params)}")
     case opts |> client() |> OAuth2.Client.get_token(params) do
       {:ok, %{token: token}} ->
         {:ok, token}
 
       {:error, %{body: %{"error" => error}}} = errorresp ->
-        Logger.warn("APPLEIDAUTH: OAuth2 errorresp: #{inspect(errorresp)}")
         {:error, {error, "error requesting token"}}
     end
   end
